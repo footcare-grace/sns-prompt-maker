@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SNSプロンプトメーカー｜Threads・Instagram・Note</title>
+<style>
+:root{
+  --ink:#2b2b28;--sub:#6f6e66;--line:#e3e1d8;--bg:#faf9f5;--card:#fff;
+  --accent:#4a4494;--accent-soft:#edecf8;--ok:#1d6e5a;--ok-soft:#e4f1ec;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI",Meiryo,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:14px 22px;display:flex;align-items:baseline;gap:12px}
+header h1{font-size:17px;font-weight:600}
+header span{font-size:12px;color:var(--sub)}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 60px;display:grid;grid-template-columns:430px 1fr;gap:18px;align-items:start}
+@media(max-width:860px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:14px}
+h2{font-size:14.5px;font-weight:600;margin-bottom:12px}
+label{display:block;font-size:12px;color:var(--sub);font-weight:600;margin-bottom:4px}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;font-size:14.5px;font-family:inherit;background:#fff;color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+textarea{resize:vertical;min-height:70px}
+.field{margin-bottom:12px}
+.hint{font-size:11.5px;color:var(--sub);margin-top:3px}
+.media-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
+.media-btn{padding:12px 10px;border:1.5px solid var(--line);border-radius:9px;background:#fff;cursor:pointer;text-align:left;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--sub)}
+.media-btn .d{display:block;font-size:11px;font-weight:400;margin-top:2px}
+.media-btn.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+button.gen{width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+button.gen:hover{background:#3a3578}
+.out-wrap{position:sticky;top:14px}
+.out-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.out-head h2{margin:0}
+.copy-btn{padding:8px 18px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:13.5px;cursor:pointer;font-family:inherit}
+.copy-btn:hover{background:#f3f2ec}
+.copy-btn.ok{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+pre{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13.5px;line-height:1.75;background:#fcfbf8;border:1px solid var(--line);border-radius:9px;padding:16px;min-height:300px;max-height:72vh;overflow-y:auto}
+pre.empty{display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:13px}
+.opt{display:none}
+.opt.on{display:block}
+.charinfo{font-size:11.5px;color:var(--sub);text-align:right;margin-top:6px}
+.steps{font-size:12px;color:var(--sub);background:var(--accent-soft);border-radius:8px;padding:10px 12px;margin-bottom:14px;line-height:1.7}
+.steps b{color:var(--accent)}
+</style>
+</head>
+<body>
+<header><h1>SNSプロンプトメーカー</h1><span>Threads・Instagram・Note対応｜API不要・完全無料</span></header>
+<main>
+
+<div>
+  <div class="steps"><b>使い方：</b>①媒体を選ぶ → ②内容を入力 → ③プロンプト生成 → ④コピーしてClaudeに貼り付け</div>
+
+  <div class="card">
+    <h2>① 媒体を選ぶ</h2>
+    <div class="media-grid">
+      <button class="media-btn on" data-m="threads">Threads<span class="d">投稿・スレッド形式</span></button>
+      <button class="media-btn" data-m="feed">Instagram フィード<span class="d">キャプション</span></button>
+      <button class="media-btn" data-m="story">Instagram ストーリーズ<span class="d">複数枚構成</span></button>
+      <button class="media-btn" data-m="note">Note<span class="d">記事構成・本文</span></button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>② 内容を入力</h2>
+    <div class="field"><label>テーマ・キーワード（必須）</label><input id="theme" placeholder="例：外反母趾と靴選びの関係"></div>
+    <div class="field"><label>ターゲット（誰に届けたいか）</label><input id="target" placeholder="例：足の痛みに悩む40〜50代女性"></div>
+    <div class="field"><label>背景情報・補足（任意）</label><textarea id="bg" placeholder="例：フットケアサロンの集客につなげたい。専門用語は噛み砕いて。"></textarea></div>
+
+    <div class="opt on" id="opt-threads">
+      <div class="field"><label>投稿数</label>
+        <select id="th-count"><option>1投稿</option><option selected>3投稿</option><option>5投稿</option><option>7投稿（1週間分）</option><option>14投稿（2週間分）</option></select></div>
+      <div class="field"><label>ファネル段階</label>
+        <select id="th-funnel"><option selected>認知（多くの人に届ける）</option><option>ファン化（共感・信頼を深める）</option><option>転換（Note・LINEへ誘導）</option><option>ミックス（自動で配分）</option></select></div>
+    </div>
+
+    <div class="opt" id="opt-feed">
+      <div class="field"><label>投稿の目的</label>
+        <select id="fd-goal"><option selected>役立つ情報の発信（保存される投稿）</option><option>サロン・サービスの紹介</option><option>LP・リンクへの誘導</option><option>共感・ストーリー系</option></select></div>
+      <div class="field"><label>参考URL（LPなど・任意）</label><input id="fd-url" placeholder="https://..."></div>
+    </div>
+
+    <div class="opt" id="opt-story">
+      <div class="field"><label>枚数</label>
+        <select id="st-count"><option>3枚</option><option selected>5枚</option><option>7枚</option></select></div>
+      <div class="field"><label>最後のアクション</label>
+        <select id="st-cta"><option selected>質問スタンプで交流</option><option>リンクへ誘導</option><option>DM・LINE登録へ誘導</option><option>次の投稿への予告</option></select></div>
+    </div>
+
+    <div class="opt" id="opt-note">
+      <div class="field"><label>記事の長さ</label>
+        <select id="nt-len"><option>1,500字程度（ライトな読み物）</option><option selected>3,000字程度（標準）</option><option>5,000字以上（有料記事向け）</option></select></div>
+      <div class="field"><label>記事タイプ</label>
+        <select id="nt-type"><option selected>ノウハウ・解説記事</option><option>体験談・ストーリー記事</option><option>有料記事（販売用）</option></select></div>
+    </div>
+
+    <button class="gen" id="btn-gen">③ プロンプトを生成する</button>
+  </div>
+</div>
+
+<div class="out-wrap">
+  <div class="card">
+    <div class="out-head">
+      <h2>④ 生成されたプロンプト</h2>
+      <button class="copy-btn" id="btn-copy">コピー</button>
+    </div>
+    <pre id="output" class="empty">左のフォームに入力して「プロンプトを生成する」を押してください</pre>
+    <div class="charinfo" id="charinfo"></div>
+  </div>
+</div>
+
+</main>
+<script src="app.js"></script>
+</body>
+</html>
